@@ -22,7 +22,9 @@ struct bpf_elf_map __section_maps CT_MAP_TCP6 = {
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= CT_MAP_SIZE_TCP,
 #ifndef HAVE_LRU_HASH_MAP_TYPE
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 #endif
 };
 
@@ -33,7 +35,9 @@ struct bpf_elf_map __section_maps CT_MAP_ANY6 = {
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= CT_MAP_SIZE_ANY,
 #ifndef HAVE_LRU_HASH_MAP_TYPE
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 #endif
 };
 
@@ -55,7 +59,9 @@ struct bpf_elf_map __section_maps CT_MAP_TCP4 = {
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= CT_MAP_SIZE_TCP,
 #ifndef HAVE_LRU_HASH_MAP_TYPE
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 #endif
 };
 
@@ -66,7 +72,9 @@ struct bpf_elf_map __section_maps CT_MAP_ANY4 = {
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= CT_MAP_SIZE_ANY,
 #ifndef HAVE_LRU_HASH_MAP_TYPE
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 #endif
 };
 

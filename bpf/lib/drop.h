@@ -49,9 +49,11 @@ int __send_drop_notify(struct __ctx_buff *ctx)
 		.dst_id		= ctx_load_meta(ctx, 3),
 	};
 
+    #ifndef EBPF_FOR_WINDOWS
 	ctx_event_output(ctx, &EVENTS_MAP,
 			 (cap_len << 32) | BPF_F_CURRENT_CPU,
 			 &msg, sizeof(msg));
+    #endif
 
 	return ctx_load_meta(ctx, 4);
 }

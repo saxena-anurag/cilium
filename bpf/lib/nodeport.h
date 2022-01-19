@@ -575,6 +575,7 @@ int tail_nodeport_ipv6_dsr(struct __ctx_buff *ctx)
 			goto drop_err;
 		}
 	} else {
+    #ifndef EBPF_FOR_WINDOWS
 		ipv6_addr_copy((union v6addr *) &fib_params.l.ipv6_src,
 			       (union v6addr *) &ip6->saddr);
 		ipv6_addr_copy((union v6addr *) &fib_params.l.ipv6_dst,
@@ -597,6 +598,10 @@ int tail_nodeport_ipv6_dsr(struct __ctx_buff *ctx)
 			ret = DROP_WRITE_ERROR;
 			goto drop_err;
 		}
+    #else
+        ret = DROP_NO_FIB;
+        goto drop_err;
+    #endif
 	}
 
 out_send:
@@ -719,6 +724,7 @@ int tail_nodeport_nat_ipv6(struct __ctx_buff *ctx)
 			goto drop_err;
 		}
 	} else {
+    #ifndef EBPF_FOR_WINDOWS
 		ipv6_addr_copy((union v6addr *) &fib_params.l.ipv6_src,
 			       (union v6addr *) &ip6->saddr);
 		ipv6_addr_copy((union v6addr *) &fib_params.l.ipv6_dst,
@@ -742,6 +748,10 @@ int tail_nodeport_nat_ipv6(struct __ctx_buff *ctx)
 			ret = DROP_WRITE_ERROR;
 			goto drop_err;
 		}
+    #else
+        ret = DROP_NO_FIB;
+        goto drop_err;
+    #endif
 	}
 out_send:
 	cilium_capture_out(ctx);
@@ -927,7 +937,9 @@ static __always_inline int rev_nodeport_lb6(struct __ctx_buff *ctx, int *ifindex
 	struct ipv6hdr *ip6;
 	struct csum_offset csum_off = {};
 	struct ct_state ct_state = {};
+#ifndef EBPF_FOR_WINDOWS
 	struct bpf_fib_lookup fib_params = {};
+#endif
 	union macaddr *dmac = NULL;
 	__u32 monitor = 0;
 	bool l2_hdr_required = true;
@@ -1005,6 +1017,9 @@ static __always_inline int rev_nodeport_lb6(struct __ctx_buff *ctx, int *ifindex
 			if (eth_store_saddr_aligned(ctx, mac.addr, 0) < 0)
 				return DROP_WRITE_ERROR;
 		} else {
+        // For demo, UM app will always populate the NODEPORT_NEIGH* map
+        // with neighbor entries, so no need to do fib_lookup.
+        #ifndef EBPF_FOR_WINDOWS
 			fib_params.family = AF_INET6;
 			fib_params.ifindex = *ifindex;
 
@@ -1020,6 +1035,9 @@ static __always_inline int rev_nodeport_lb6(struct __ctx_buff *ctx, int *ifindex
 				return DROP_WRITE_ERROR;
 			if (eth_store_saddr(ctx, fib_params.smac, 0) < 0)
 				return DROP_WRITE_ERROR;
+        #else
+            return DROP_NO_FIB;
+        #endif
 		}
 	} else {
 		if (!bpf_skip_recirculation(ctx)) {
@@ -1584,6 +1602,7 @@ int tail_nodeport_ipv4_dsr(struct __ctx_buff *ctx)
 			goto drop_err;
 		}
 	} else {
+    #ifndef EBPF_FOR_WINDOWS
 		fib_params.l.ipv4_src = ip4->saddr;
 		fib_params.l.ipv4_dst = ip4->daddr;
 
@@ -1604,6 +1623,10 @@ int tail_nodeport_ipv4_dsr(struct __ctx_buff *ctx)
 			ret = DROP_WRITE_ERROR;
 			goto drop_err;
 		}
+    #else
+        ret = DROP_NO_FIB;
+        goto drop_err;
+    #endif
 	}
 
 out_send:
@@ -1727,6 +1750,7 @@ int tail_nodeport_nat_ipv4(struct __ctx_buff *ctx)
 			goto drop_err;
 		}
 	} else {
+    #ifndef EBPF_FOR_WINDOWS
 		fib_params.l.ipv4_src = ip4->saddr;
 		fib_params.l.ipv4_dst = ip4->daddr;
 
@@ -1748,6 +1772,10 @@ int tail_nodeport_nat_ipv4(struct __ctx_buff *ctx)
 			ret = DROP_WRITE_ERROR;
 			goto drop_err;
 		}
+    #else
+        ret = DROP_NO_FIB;
+        goto drop_err;
+    #endif
 	}
 out_send:
 	cilium_capture_out(ctx);
@@ -1949,7 +1977,9 @@ static __always_inline int rev_nodeport_lb4(struct __ctx_buff *ctx, int *ifindex
 	struct csum_offset csum_off = {};
 	int ret, ret2, l3_off = ETH_HLEN, l4_off;
 	struct ct_state ct_state = {};
+#ifndef EBPF_FOR_WINDOWS
 	struct bpf_fib_lookup fib_params = {};
+#endif
 	union macaddr *dmac = NULL;
 	__u32 monitor = 0;
 	bool l2_hdr_required = true;
@@ -2023,6 +2053,9 @@ static __always_inline int rev_nodeport_lb4(struct __ctx_buff *ctx, int *ifindex
 			if (eth_store_saddr_aligned(ctx, mac.addr, 0) < 0)
 				return DROP_WRITE_ERROR;
 		} else {
+        // For demo, UM app will always populate the NODEPORT_NEIGH* map
+        // with neighbor entries, so no need to do fib_lookup.
+        #ifndef EBPF_FOR_WINDOWS
 			fib_params.family = AF_INET;
 			fib_params.ifindex = *ifindex;
 
@@ -2039,6 +2072,9 @@ static __always_inline int rev_nodeport_lb4(struct __ctx_buff *ctx, int *ifindex
 				return DROP_WRITE_ERROR;
 			if (eth_store_saddr(ctx, fib_params.smac, 0) < 0)
 				return DROP_WRITE_ERROR;
+        #else
+            return DROP_NO_FIB;
+        #endif
 		}
 	} else {
 		if (!bpf_skip_recirculation(ctx)) {

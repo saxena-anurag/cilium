@@ -117,7 +117,9 @@ struct bpf_elf_map __section_maps SNAT_MAPPING_IPV4 = {
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= SNAT_MAPPING_IPV4_SIZE,
 #ifndef HAVE_LRU_HASH_MAP_TYPE
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 #endif
 };
 
@@ -128,7 +130,9 @@ struct bpf_elf_map __section_maps IP_MASQ_AGENT_IPV4 = {
 	.size_value	= sizeof(struct lpm_val),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= 16384,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= BPF_F_NO_PREALLOC,
+    #endif
 };
 #endif
 
@@ -612,7 +616,9 @@ struct bpf_elf_map __section_maps SNAT_MAPPING_IPV6 = {
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= SNAT_MAPPING_IPV6_SIZE,
 #ifndef HAVE_LRU_HASH_MAP_TYPE
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 #endif
 };
 

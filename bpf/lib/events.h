@@ -6,6 +6,7 @@
 
 #include <bpf/api.h>
 
+#ifndef EBPF_FOR_WINDOWS
 struct bpf_elf_map __section_maps EVENTS_MAP = {
 	.type		= BPF_MAP_TYPE_PERF_EVENT_ARRAY,
 	.size_key	= sizeof(__u32),
@@ -13,5 +14,6 @@ struct bpf_elf_map __section_maps EVENTS_MAP = {
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= __NR_CPUS__,
 };
+#endif
 
 #endif /* __LIB_EVENTS_H_ */

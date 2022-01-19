@@ -43,6 +43,7 @@ struct capture_msg {
 	struct pcap_pkthdr hdr;
 };
 
+#ifndef EBPF_FOR_WINDOWS
 static __always_inline void cilium_capture(struct __ctx_buff *ctx,
 					   const __u8 subtype,
 					   const __u16 rule_id,
@@ -71,10 +72,18 @@ static __always_inline void cilium_capture(struct __ctx_buff *ctx,
 	ctx_event_output(ctx, &EVENTS_MAP, (cap_len << 32) | BPF_F_CURRENT_CPU,
 			 &msg, sizeof(msg));
 }
+#else
+#define cilium_capture(...)
+#endif
 
 static __always_inline void __cilium_capture_in(struct __ctx_buff *ctx,
 						__u16 rule_id, __u32 cap_len)
 {
+#ifdef EBPF_FOR_WINDOWS
+    UNREFERENCED_PARAMETER(ctx);
+    UNREFERENCED_PARAMETER(rule_id);
+    UNREFERENCED_PARAMETER(cap_len);
+#endif
 	/* For later pcap file generation, we export boot time to the RB
 	 * such that user space can later reconstruct a real time of day
 	 * timestamp in-place.
@@ -86,6 +95,11 @@ static __always_inline void __cilium_capture_in(struct __ctx_buff *ctx,
 static __always_inline void __cilium_capture_out(struct __ctx_buff *ctx,
 						 __u16 rule_id, __u32 cap_len)
 {
+#ifdef EBPF_FOR_WINDOWS
+    UNREFERENCED_PARAMETER(ctx);
+    UNREFERENCED_PARAMETER(rule_id);
+    UNREFERENCED_PARAMETER(cap_len);
+#endif
 	cilium_capture(ctx, CAPTURE_EGRESS, rule_id,
 		       bpf_ktime_cache_get(), cap_len);
 }
@@ -150,7 +164,9 @@ struct bpf_elf_map __section_maps CAPTURE4_RULES = {
 	.size_value	= sizeof(struct capture_rule),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= CAPTURE4_SIZE,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= BPF_F_NO_PREALLOC,
+    #endif
 };
 
 static __always_inline void
@@ -262,7 +278,9 @@ struct bpf_elf_map __section_maps CAPTURE6_RULES = {
 	.size_value	= sizeof(struct capture_rule),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= CAPTURE6_SIZE,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= BPF_F_NO_PREALLOC,
+    #endif
 };
 
 static __always_inline void
@@ -410,6 +428,7 @@ cilium_capture_candidate(struct __ctx_buff *ctx __maybe_unused,
 			 __u16 *rule_id __maybe_unused,
 			 __u32 *cap_len __maybe_unused)
 {
+    #ifndef EBPF_FOR_WINDOWS
 	if (capture_enabled) {
 		struct capture_cache *c;
 		struct capture_rule *r;
@@ -426,6 +445,7 @@ cilium_capture_candidate(struct __ctx_buff *ctx __maybe_unused,
 			}
 		}
 	}
+    #endif
 	return false;
 }
 
@@ -434,6 +454,7 @@ cilium_capture_cached(struct __ctx_buff *ctx __maybe_unused,
 		      __u16 *rule_id __maybe_unused,
 		      __u32 *cap_len __maybe_unused)
 {
+    #ifndef EBPF_FOR_WINDOWS
 	if (capture_enabled) {
 		struct capture_cache *c;
 		__u32 zero = 0;
@@ -449,6 +470,7 @@ cilium_capture_cached(struct __ctx_buff *ctx __maybe_unused,
 			return true;
 		}
 	}
+    #endif
 	return false;
 }
 

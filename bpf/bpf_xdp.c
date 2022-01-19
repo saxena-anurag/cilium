@@ -4,8 +4,19 @@
 #include <bpf/ctx/xdp.h>
 #include <bpf/api.h>
 
+#if defined(MODE_SNAT)
+#include <node_config_static.h>
+#include <node_config_snat.h>
+#include <netdev_config_snat.h>
+#elif defined(MODE_DSR)
+#include <node_config_static.h>
+#include <node_config_dsr.h>
+#include <netdev_config_dsr.h>
+#else
 #include <node_config.h>
 #include <netdev_config.h>
+#endif
+
 #include <filter_config.h>
 
 #define SKIP_POLICY_MAP 1
@@ -48,7 +59,9 @@ struct bpf_elf_map __section_maps CIDR4_HMAP_NAME = {
 	.type		= BPF_MAP_TYPE_HASH,
 	.size_key	= sizeof(struct lpm_v4_key),
 	.size_value	= sizeof(struct lpm_val),
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= BPF_F_NO_PREALLOC,
+    #endif
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= CIDR4_HMAP_ELEMS,
 };
@@ -58,7 +71,9 @@ struct bpf_elf_map __section_maps CIDR4_LMAP_NAME = {
 	.type		= BPF_MAP_TYPE_LPM_TRIE,
 	.size_key	= sizeof(struct lpm_v4_key),
 	.size_value	= sizeof(struct lpm_val),
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= BPF_F_NO_PREALLOC,
+    #endif
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= CIDR4_LMAP_ELEMS,
 };
@@ -70,7 +85,9 @@ struct bpf_elf_map __section_maps CIDR6_HMAP_NAME = {
 	.type		= BPF_MAP_TYPE_HASH,
 	.size_key	= sizeof(struct lpm_v6_key),
 	.size_value	= sizeof(struct lpm_val),
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= BPF_F_NO_PREALLOC,
+    #endif
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= CIDR4_HMAP_ELEMS,
 };
@@ -80,7 +97,9 @@ struct bpf_elf_map __section_maps CIDR6_LMAP_NAME = {
 	.type		= BPF_MAP_TYPE_LPM_TRIE,
 	.size_key	= sizeof(struct lpm_v6_key),
 	.size_value	= sizeof(struct lpm_val),
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= BPF_F_NO_PREALLOC,
+    #endif
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= CIDR4_LMAP_ELEMS,
 };
@@ -97,6 +116,7 @@ bpf_xdp_exit(struct __ctx_buff *ctx, const int verdict)
 		/* We transfer data from XFER_MARKER. This specifically
 		 * does not break packet trains in GRO.
 		 */
+        #ifndef EBPF_FOR_WINDOWS
 		if (meta_xfer) {
 			if (!ctx_adjust_meta(ctx, -(int)sizeof(meta_xfer))) {
 				__u32 *data_meta = ctx_data_meta(ctx);
@@ -106,6 +126,10 @@ bpf_xdp_exit(struct __ctx_buff *ctx, const int verdict)
 					data_meta[0] = meta_xfer;
 			}
 		}
+        #else
+        UNREFERENCED_PARAMETER(meta_xfer);
+        #endif
+
 	}
 
 	return verdict;

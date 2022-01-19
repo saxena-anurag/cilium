@@ -6,7 +6,9 @@
 
 #include <linux/types.h>
 #include <linux/byteorder.h>
+#ifndef EBPF_FOR_WINDOWS
 #include <linux/bpf.h>
+#endif
 #include <linux/if_packet.h>
 
 #include "compiler.h"

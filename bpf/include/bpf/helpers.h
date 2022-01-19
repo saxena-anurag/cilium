@@ -4,7 +4,13 @@
 #ifndef __BPF_HELPERS__
 #define __BPF_HELPERS__
 
+#ifndef EBPF_FOR_WINDOWS
 #include <linux/bpf.h>
+#else
+#include "windows_types.h"
+#include "bpf_helpers.h"
+#include "ebpf_nethooks.h"
+#endif
 
 #include "ctx/ctx.h"
 #include "compiler.h"
@@ -39,9 +45,12 @@ static int BPF_FUNC(map_delete_elem, const void *map, const void *key);
 /* Time access */
 static __u64 BPF_FUNC(ktime_get_ns);
 static __u64 BPF_FUNC(ktime_get_boot_ns);
+#ifndef EBPF_FOR_WINDOWS
 static __u64 BPF_FUNC(jiffies64);
 #define jiffies	jiffies64()
+#endif
 
+#ifndef EBPF_FOR_WINDOWS
 /* We have cookies! ;-) */
 static __sock_cookie BPF_FUNC(get_socket_cookie, void *ctx);
 static __net_cookie BPF_FUNC(get_netns_cookie, void *ctx);
@@ -52,6 +61,7 @@ static __u32 BPF_FUNC(get_cgroup_classid);
 /* Debugging */
 static __printf(1, 3) void
 BPF_FUNC(trace_printk, const char *fmt, int fmt_size, ...);
+#endif
 
 /* Random numbers */
 static __u32 BPF_FUNC(get_prandom_u32);
@@ -76,10 +86,13 @@ struct bpf_fib_lookup_padded {
 	__u8 pad[2];
 };
 
+#ifndef EBPF_FOR_WINDOWS
 /* Routing helpers */
 static int BPF_FUNC(fib_lookup, void *ctx, struct bpf_fib_lookup *params,
 		    __u32 plen, __u32 flags);
+#endif
 
+#ifndef EBPF_FOR_WINDOWS
 /* Sockops and SK_MSG helpers */
 static int BPF_FUNC(sock_map_update, struct bpf_sock_ops *skops, void *map,
 		    __u32 key,  __u64 flags);
@@ -103,5 +116,6 @@ static struct bpf_sock *BPF_FUNC(sk_lookup_udp, void *ctx,
 static int BPF_FUNC_REMAP(get_socket_opt, void *ctx, int level, int optname,
 			  void *optval, int optlen) =
 	(void *)BPF_FUNC_getsockopt;
+#endif /* EBPF_FOR_WINDOWS */
 
 #endif /* __BPF_HELPERS__ */

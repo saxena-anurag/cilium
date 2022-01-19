@@ -5,7 +5,13 @@
 #define __BPF_CTX_COMMON_H_
 
 #include <linux/types.h>
+#ifndef EBPF_FOR_WINDOWS
 #include <linux/bpf.h>
+#else
+#include "windows_types.h"
+#include "ebpf_nethooks.h"
+#include "bpf_helpers.h"
+#endif
 
 #include "../compiler.h"
 #include "../errno.h"

@@ -17,7 +17,9 @@ struct bpf_elf_map __section_maps LB6_REVERSE_NAT_MAP = {
 	.size_value	= sizeof(struct lb6_reverse_nat),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= CILIUM_LB_MAP_MAX_ENTRIES,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 };
 
 struct bpf_elf_map __section_maps LB6_SERVICES_MAP_V2 = {
@@ -26,7 +28,9 @@ struct bpf_elf_map __section_maps LB6_SERVICES_MAP_V2 = {
 	.size_value	= sizeof(struct lb6_service),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= CILIUM_LB_MAP_MAX_ENTRIES,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 };
 
 struct bpf_elf_map __section_maps LB6_BACKEND_MAP_V2 = {
@@ -35,7 +39,9 @@ struct bpf_elf_map __section_maps LB6_BACKEND_MAP_V2 = {
 	.size_value     = sizeof(struct lb6_backend),
 	.pinning        = PIN_GLOBAL_NS,
 	.max_elem       = CILIUM_LB_MAP_MAX_ENTRIES,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags          = CONDITIONAL_PREALLOC,
+    #endif
 };
 
 #ifdef ENABLE_SESSION_AFFINITY
@@ -55,7 +61,9 @@ struct bpf_elf_map __section_maps LB6_SRC_RANGE_MAP = {
 	.size_value	= sizeof(__u8),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= LB6_SRC_RANGE_MAP_SIZE,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= BPF_F_NO_PREALLOC,
+    #endif
 };
 #endif
 
@@ -76,7 +84,9 @@ struct bpf_elf_map __section_maps LB6_MAGLEV_MAP_INNER = {
 	.size_value	= sizeof(__u32) * LB_MAGLEV_LUT_SIZE,
 	.pinning	= PIN_NONE,
 	.max_elem	= 1,
+    #ifndef EBPF_FOR_WINDOWS
 	.inner_idx	= NO_PREPOPULATE,
+    #endif
 	.id		= CILIUM_MAP_MAGLEV6,
 };
 
@@ -87,7 +97,9 @@ struct bpf_elf_map __section_maps LB6_MAGLEV_MAP_OUTER = {
 	.pinning	= PIN_GLOBAL_NS,
 	.inner_id	= CILIUM_MAP_MAGLEV6,
 	.max_elem	= CILIUM_LB_MAP_MAX_ENTRIES,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 };
 #endif /* LB_SELECTION == LB_SELECTION_MAGLEV */
 #endif /* ENABLE_IPV6 */
@@ -99,7 +111,9 @@ struct bpf_elf_map __section_maps LB4_REVERSE_NAT_MAP = {
 	.size_value	= sizeof(struct lb4_reverse_nat),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= CILIUM_LB_MAP_MAX_ENTRIES,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 };
 
 struct bpf_elf_map __section_maps LB4_SERVICES_MAP_V2 = {
@@ -108,7 +122,9 @@ struct bpf_elf_map __section_maps LB4_SERVICES_MAP_V2 = {
 	.size_value	= sizeof(struct lb4_service),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= CILIUM_LB_MAP_MAX_ENTRIES,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 };
 
 struct bpf_elf_map __section_maps LB4_BACKEND_MAP_V2 = {
@@ -117,7 +133,9 @@ struct bpf_elf_map __section_maps LB4_BACKEND_MAP_V2 = {
 	.size_value     = sizeof(struct lb4_backend),
 	.pinning        = PIN_GLOBAL_NS,
 	.max_elem       = CILIUM_LB_MAP_MAX_ENTRIES,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags          = CONDITIONAL_PREALLOC,
+    #endif
 };
 
 #ifdef ENABLE_SESSION_AFFINITY
@@ -137,7 +155,9 @@ struct bpf_elf_map __section_maps LB4_SRC_RANGE_MAP = {
 	.size_value	= sizeof(__u8),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= LB4_SRC_RANGE_MAP_SIZE,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= BPF_F_NO_PREALLOC,
+    #endif
 };
 #endif
 
@@ -158,7 +178,9 @@ struct bpf_elf_map __section_maps LB4_MAGLEV_MAP_INNER = {
 	.size_value	= sizeof(__u32) * LB_MAGLEV_LUT_SIZE,
 	.pinning	= PIN_NONE,
 	.max_elem	= 1,
+    #ifndef EBPF_FOR_WINDOWS
 	.inner_idx	= NO_PREPOPULATE,
+    #endif
 	.id		= CILIUM_MAP_MAGLEV4,
 };
 
@@ -169,7 +191,9 @@ struct bpf_elf_map __section_maps LB4_MAGLEV_MAP_OUTER = {
 	.pinning	= PIN_GLOBAL_NS,
 	.inner_id	= CILIUM_MAP_MAGLEV4,
 	.max_elem	= CILIUM_LB_MAP_MAX_ENTRIES,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 };
 #endif /* LB_SELECTION == LB_SELECTION_MAGLEV */
 #endif /* ENABLE_IPV4 */
@@ -181,7 +205,9 @@ struct bpf_elf_map __section_maps LB_AFFINITY_MATCH_MAP = {
 	.size_value	= sizeof(__u8), /* dummy value, map is used as a set */
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= CILIUM_LB_MAP_MAX_ENTRIES,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 };
 #endif
 

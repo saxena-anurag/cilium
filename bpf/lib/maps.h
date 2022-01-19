@@ -16,7 +16,9 @@ struct bpf_elf_map __section_maps ENDPOINTS_MAP = {
 	.size_value	= sizeof(struct endpoint_info),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= ENDPOINTS_MAP_SIZE,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 };
 
 struct bpf_elf_map __section_maps METRICS_MAP = {
@@ -25,7 +27,9 @@ struct bpf_elf_map __section_maps METRICS_MAP = {
 	.size_value	= sizeof(struct metrics_value),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= METRICS_MAP_SIZE,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 };
 
 #ifndef SKIP_POLICY_MAP
@@ -47,7 +51,9 @@ struct bpf_elf_map __section_maps THROTTLE_MAP = {
 	.size_value	= sizeof(struct edt_info),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= THROTTLE_MAP_SIZE,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= BPF_F_NO_PREALLOC,
+    #endif
 };
 #endif /* ENABLE_BANDWIDTH_MANAGER */
 
@@ -70,7 +76,9 @@ struct bpf_elf_map __section_maps POLICY_MAP = {
 	.size_value	= sizeof(struct policy_entry),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= POLICY_MAP_SIZE,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 };
 #endif
 
@@ -78,7 +86,9 @@ struct bpf_elf_map __section_maps POLICY_MAP = {
 /* Private per EP map for internal tail calls */
 struct bpf_elf_map __section_maps CALLS_MAP = {
 	.type		= BPF_MAP_TYPE_PROG_ARRAY,
+    #ifndef EBPF_FOR_WINDOWS
 	.id		= CILIUM_MAP_CALLS,
+    #endif
 	.size_key	= sizeof(__u32),
 	.size_value	= sizeof(__u32),
 	.pinning	= PIN_GLOBAL_NS,
@@ -94,7 +104,9 @@ struct bpf_elf_map __section_maps TUNNEL_MAP = {
 	.size_value	= sizeof(struct endpoint_key),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= TUNNEL_ENDPOINT_MAP_SIZE,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= CONDITIONAL_PREALLOC,
+    #endif
 };
 
 #endif
@@ -175,7 +187,9 @@ struct bpf_elf_map __section_maps IPCACHE_MAP = {
 	.size_value	= sizeof(struct remote_endpoint_info),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= IPCACHE_MAP_SIZE,
+    #ifndef EBPF_FOR_WINDOWS
 	.flags		= BPF_F_NO_PREALLOC,
+    #endif
 };
 
 struct bpf_elf_map __section_maps ENCRYPT_MAP = {
