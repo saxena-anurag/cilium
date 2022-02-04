@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright (C) 2017-2020 Authors of Cilium */
 
+#ifdef EBPF_FOR_WINDOWS
+#include <windows_types.h>
+#define _MSC_VER
+#include <bpf_helpers.h>
+#undef _MSC_VER
+#endif
 #include <bpf/ctx/xdp.h>
 #include <bpf/api.h>
 
