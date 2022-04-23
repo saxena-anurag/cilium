@@ -23,25 +23,12 @@ struct bpf_elf_map {
 	__u32 inner_idx;
 };
 #else
-// EBPF_FOR_WINDOWS: This is a copy of ebpf_map_definition_in_file_t with
-// field names adjusted to match what is expected by XDP progra,.
-struct bpf_elf_map
-{
-    __u32 size;        ///< Size in bytes of the ebpf_map_definition_t structure.
-    __u32 type; ///< Type of map.
-    __u32 size_key;    ///< Size in bytes of a map key.
-    __u32 size_value;  ///< Size in bytes of a map value.
-    __u32 max_elem; ///< Maximum number of entries allowed in the map.
-
-    /** When a map definition is hard coded in an eBPF program, inner_map_idx
-     * indicates the 0-based index of which map in the maps section of the ELF
-     * file is the inner map template.
-     */
-    uint32_t inner_map_idx;
-    uint32_t pinning;
-    uint32_t id;
-    uint32_t inner_id;
-};
+// EBPF_FOR_WINDOWS: Cilium uses different field names in map definitons.
+// Following #defines redefine them to the names used in ebpf-for-windows headers.
+#define size_key key_size
+#define size_value value_size
+#define max_elem max_entries
+#define bpf_elf_map _ebpf_map_definition_in_file
 
 #endif
 
