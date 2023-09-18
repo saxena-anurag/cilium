@@ -24,12 +24,16 @@ tail_call_static(const struct __ctx_buff *ctx, const void *map,
 	 * to mark them as clobber so that LLVM doesn't end up using them
 	 * before / after the call.
 	 */
+    #ifndef EBPF_FOR_WINDOWS
 	asm volatile("r1 = %[ctx]\n\t"
 		     "r2 = %[map]\n\t"
 		     "r3 = %[slot]\n\t"
 		     "call 12\n\t"
 		     :: [ctx]"r"(ctx), [map]"r"(map), [slot]"i"(slot)
 		     : "r0", "r1", "r2", "r3", "r4", "r5");
+    #else
+    tail_call((void*)ctx, map, slot);
+    #endif
 }
 
 static __always_inline __maybe_unused void

@@ -22,13 +22,21 @@
 
 #define CTX_DIRECT_WRITE_OK		1
 
+#ifndef EBPF_FOR_WINDOWS
 					/* cb + RECIRC_MARKER + XFER_MARKER */
 #define META_PIVOT			((int)(field_sizeof(struct __sk_buff, cb) + \
 					       sizeof(__u32) * 2))
+#else
+// Since __sk_buff is not part of the headers included, hardcoding the 
+// size of cb to 20.
+                    /* cb + RECIRC_MARKER + XFER_MARKER */
+#define META_PIVOT			((int)(20 + sizeof(__u32) * 2))
+#endif
 
 /* This must be a mask and all offsets guaranteed to be less than that. */
 #define __CTX_OFF_MAX			0xff
 
+#ifndef EBPF_FOR_WINDOWS
 static __always_inline __maybe_unused int
 xdp_load_bytes(const struct xdp_md *ctx, __u64 off, void *to, const __u64 len)
 {
@@ -56,7 +64,47 @@ xdp_load_bytes(const struct xdp_md *ctx, __u64 off, void *to, const __u64 len)
 		memcpy(to, from, len);
 	return ret;
 }
+#else
+static __always_inline __maybe_unused int
+xdp_load_bytes(const struct xdp_md *ctx, __u64 off, void *to, const __u64 len)
+{
+    #define __MAX_PACKET_SIZE     0xFFFF
+	int ret = 0;
 
+    off &= __CTX_OFF_MAX;
+    if (len > __CTX_OFF_MAX) {
+        ret = -1;
+        goto End;
+    }
+    if (ctx->data > ctx->data_end) {
+        ret = -1;
+        goto End;
+    }
+    if (ctx->data + __MAX_PACKET_SIZE < ctx->data_end) {
+        ret = -1;
+        goto End;
+    }
+
+    if ((char*)ctx->data + off > (char*)ctx->data_end) {
+        ret = -1;
+        goto End;
+    }
+    if (off + len > __MAX_PACKET_SIZE) {
+        ret = -1;
+        goto End;
+    }
+    if ((char*)ctx->data + off + len > (char*)ctx->data_end) {
+        ret = -1;
+        goto End;
+    }
+    memcpy(to, (char*)ctx->data + off, len);
+
+End:
+	return ret;
+}
+#endif
+
+#ifndef EBPF_FOR_WINDOWS
 static __always_inline __maybe_unused int
 xdp_store_bytes(const struct xdp_md *ctx, __u64 off, const void *from,
 		const __u64 len, __u64 flags __maybe_unused)
@@ -82,6 +130,30 @@ xdp_store_bytes(const struct xdp_md *ctx, __u64 off, const void *from,
 		memcpy(to, from, len);
 	return ret;
 }
+#else
+static __always_inline __maybe_unused int
+xdp_store_bytes(const struct xdp_md *ctx, __u64 off, const void *from,
+		const __u64 len, __u64 flags __maybe_unused)
+{
+	char* to;
+	int ret = 0;
+
+    off &= __CTX_OFF_MAX;
+    to = (char*)ctx->data + off;
+    if (to > (char*)ctx->data_end) {
+        ret = -1;
+        goto End;
+    }
+    if (to + len > (char*)ctx->data_end) {
+        ret = -1;
+        goto End;
+    }
+    memcpy(to, from, len);
+
+End:
+	return ret;
+}
+#endif
 
 #define ctx_load_bytes			xdp_load_bytes
 #define ctx_store_bytes			xdp_store_bytes
@@ -99,7 +171,11 @@ xdp_store_bytes(const struct xdp_md *ctx, __u64 off, const void *from,
 #define ctx_get_tunnel_key		xdp_get_tunnel_key__stub
 #define ctx_set_tunnel_key		xdp_set_tunnel_key__stub
 
+#ifndef EBPF_FOR_WINDOWS
 #define ctx_event_output		xdp_event_output
+#else
+#define ctx_event_output
+#endif
 
 #define ctx_adjust_meta			xdp_adjust_meta
 
@@ -131,6 +207,7 @@ l3_csum_replace(const struct xdp_md *ctx, __u64 off, const __u32 from,
 		return -EINVAL;
 	if (unlikely(size != 0 && size != 2))
 		return -EINVAL;
+#ifndef EBPF_FOR_WINDOWS
 	/* See xdp_load_bytes(). */
 	asm volatile("r1 = *(u32 *)(%[ctx] +0)\n\t"
 		     "r2 = *(u32 *)(%[ctx] +4)\n\t"
@@ -147,6 +224,14 @@ l3_csum_replace(const struct xdp_md *ctx, __u64 off, const __u32 from,
 		       [offmax]"i"(__CTX_OFF_MAX), [errno]"i"(-EINVAL)
 		     : "r1", "r2");
 	if (!ret)
+#else
+	off &= __CTX_OFF_MAX;
+	sum = ctx->data + off;
+	if ((void*)sum + 2 > ctx->data_end)
+		ret = -EINVAL;
+	else
+		ret = 0;
+#endif
 		from ? __csum_replace_by_4(sum, from, to) :
 		       __csum_replace_by_diff(sum, to);
 	return ret;
@@ -168,6 +253,7 @@ l4_csum_replace(const struct xdp_md *ctx, __u64 off, __u32 from, __u32 to,
 		return -EINVAL;
 	if (unlikely(size != 0 && size != 2))
 		return -EINVAL;
+#ifndef EBPF_FOR_WINDOWS
 	/* See xdp_load_bytes(). */
 	asm volatile("r1 = *(u32 *)(%[ctx] +0)\n\t"
 		     "r2 = *(u32 *)(%[ctx] +4)\n\t"
@@ -184,6 +270,13 @@ l4_csum_replace(const struct xdp_md *ctx, __u64 off, __u32 from, __u32 to,
 		       [offmax]"i"(__CTX_OFF_MAX), [errno]"i"(-EINVAL)
 		     : "r1", "r2");
 	if (!ret) {
+#else
+	sum = ctx->data + (off & __CTX_OFF_MAX);
+	if ((void*)sum + 2 > ctx->data_end)
+		ret = -EINVAL;
+	else {
+		ret = 0;
+#endif
 		if (is_mmzero && !*sum)
 			return 0;
 		from ? __csum_replace_by_4(sum, from, to) :
@@ -194,11 +287,13 @@ l4_csum_replace(const struct xdp_md *ctx, __u64 off, __u32 from, __u32 to,
 	return ret;
 }
 
+#ifndef EBPF_FOR_WINDOWS
 static __always_inline __maybe_unused int
 ctx_adjust_troom(struct xdp_md *ctx, const __s32 len_diff)
 {
 	return xdp_adjust_tail(ctx, len_diff);
 }
+#endif
 
 static __always_inline __maybe_unused int
 ctx_adjust_hroom(struct xdp_md *ctx, const __s32 len_diff, const __u32 mode,

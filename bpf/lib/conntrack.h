@@ -241,6 +241,7 @@ static __always_inline __u8 __ct_lookup(const void *map, struct __ctx_buff *ctx,
 			ctx_store_meta(ctx, CB_NAT46_STATE, NAT46);
 #endif
 #ifdef CONNTRACK_ACCOUNTING
+#ifndef EBPF_FOR_WINDOWS
 		/* FIXME: This is slow, per-cpu counters? */
 		if (dir == CT_INGRESS) {
 			__sync_fetch_and_add(&entry->rx_packets, 1);
@@ -249,6 +250,18 @@ static __always_inline __u8 __ct_lookup(const void *map, struct __ctx_buff *ctx,
 			__sync_fetch_and_add(&entry->tx_packets, 1);
 			__sync_fetch_and_add(&entry->tx_bytes, ctx_full_len(ctx));
 		}
+#else
+        // EBPF_FOR_WINDOWS: __sync_fetch_and_add is not supported by
+        // ubpf. For demo, we dont need to use __sync_fetch_and_add.
+        // We can use simple add.
+		if (dir == CT_INGRESS) {
+            entry->rx_packets++;
+            entry->rx_bytes += ctx_full_len(ctx);
+		} else if (dir == CT_EGRESS) {
+            entry->tx_packets++;
+            entry->tx_bytes += ctx_full_len(ctx);
+		}
+#endif
 #endif
 		switch (action) {
 		case ACTION_CREATE:
@@ -571,6 +584,13 @@ static __always_inline void ct4_cilium_dbg_tuple(struct __ctx_buff *ctx, __u8 ty
 						 __u32 rev_nat_index, int dir)
 {
 	__be32 addr = (dir == CT_INGRESS) ? tuple->saddr : tuple->daddr;
+
+    #ifdef EBPF_FOR_WINDOWS
+    UNREFERENCED_PARAMETER(addr);
+    UNREFERENCED_PARAMETER(ctx);
+    UNREFERENCED_PARAMETER(rev_nat_index);
+    UNREFERENCED_PARAMETER(type);
+    #endif
 
 	cilium_dbg(ctx, type, addr, rev_nat_index);
 }

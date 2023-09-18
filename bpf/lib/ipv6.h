@@ -35,6 +35,17 @@
 
 #define NEXTHDR_MAX             255
 
+// Copied this enum from include\linux\bpf.h.
+// When compiled for Windows, the Linux header file is not included,
+// and this enum is required for passing some metadata from XDP to SKB.
+#ifdef EBPF_FOR_WINDOWS
+/* BPF_FUNC_skb_store_bytes flags. */
+enum {
+	BPF_F_RECOMPUTE_CSUM		= (1ULL << 0),
+	BPF_F_INVALIDATE_HASH		= (1ULL << 1),
+};
+#endif
+
 static __always_inline int ipv6_optlen(const struct ipv6_opt_hdr *opthdr)
 {
 	return (opthdr->hdrlen + 1) << 3;

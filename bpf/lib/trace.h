@@ -179,9 +179,11 @@ send_trace_notify(struct __ctx_buff *ctx, __u8 obs_point, __u32 src, __u32 dst,
 	};
 	memset(&msg.orig_ip6, 0, sizeof(union v6addr));
 
+    #ifndef EBPF_FOR_WINDOWS
 	ctx_event_output(ctx, &EVENTS_MAP,
 			 (cap_len << 32) | BPF_F_CURRENT_CPU,
 			 &msg, sizeof(msg));
+    #endif
 }
 
 static __always_inline void
@@ -211,9 +213,11 @@ send_trace_notify4(struct __ctx_buff *ctx, __u8 obs_point, __u32 src, __u32 dst,
 		.orig_ip4	= orig_addr,
 	};
 
+    #ifndef EBPF_FOR_WINDOWS
 	ctx_event_output(ctx, &EVENTS_MAP,
 			 (cap_len << 32) | BPF_F_CURRENT_CPU,
 			 &msg, sizeof(msg));
+    #endif
 }
 
 static __always_inline void
@@ -244,9 +248,11 @@ send_trace_notify6(struct __ctx_buff *ctx, __u8 obs_point, __u32 src, __u32 dst,
 
 	ipv6_addr_copy(&msg.orig_ip6, orig_addr);
 
+    #ifndef EBPF_FOR_WINDOWS
 	ctx_event_output(ctx, &EVENTS_MAP,
 			 (cap_len << 32) | BPF_F_CURRENT_CPU,
 			 &msg, sizeof(msg));
+    #endif
 }
 #else
 static __always_inline void

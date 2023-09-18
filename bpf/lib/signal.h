@@ -6,6 +6,7 @@
 
 #include <bpf/api.h>
 
+#ifndef EBPF_FOR_WINDOWS
 struct bpf_elf_map __section_maps SIGNAL_MAP = {
 	.type		= BPF_MAP_TYPE_PERF_EVENT_ARRAY,
 	.size_key	= sizeof(__u32),
@@ -13,6 +14,7 @@ struct bpf_elf_map __section_maps SIGNAL_MAP = {
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= __NR_CPUS__,
 };
+#endif
 
 enum {
 	SIGNAL_NAT_FILL_UP = 0,
@@ -36,8 +38,13 @@ struct signal_msg {
 static __always_inline void send_signal(struct __ctx_buff *ctx,
 					struct signal_msg *msg)
 {
+#ifdef EBPF_FOR_WINDOWS
+    UNREFERENCED_PARAMETER(ctx);
+    UNREFERENCED_PARAMETER(msg);
+#else
 	ctx_event_output(ctx, &SIGNAL_MAP, BPF_F_CURRENT_CPU,
 			 msg, sizeof(*msg));
+#endif
 }
 
 static __always_inline void send_signal_nat_fill_up(struct __ctx_buff *ctx,
