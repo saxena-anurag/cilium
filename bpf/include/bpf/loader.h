@@ -6,9 +6,16 @@
 
 #include <linux/types.h>
 
+#ifndef EBPF_FOR_WINDOWS
 #define PIN_NONE		0
 #define PIN_OBJECT_NS		1
 #define PIN_GLOBAL_NS		2
+#else
+// eBPF-For-Windows now supports the LIBBPF PIN TYPES.
+// Redefine the above pin types to match libbpf PIN types.
+#define PIN_NONE             0
+#define PIN_GLOBAL_NS        1
+#endif
 
 #ifndef EBPF_FOR_WINDOWS
 struct bpf_elf_map {
