@@ -41,6 +41,7 @@ bpf-coverage.cover
 .vscode/*
 !.vscode/launch.json
 !.vscode/extensions.json
+**/.vscode/
 *.plist
 
 *_bash_completion
