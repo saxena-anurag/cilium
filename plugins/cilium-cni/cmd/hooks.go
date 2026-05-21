@@ -8,7 +8,6 @@ import (
 	cniTypesV1 "github.com/containernetworking/cni/pkg/types/100"
 
 	"github.com/cilium/cilium/api/v1/models"
-	datapath "github.com/cilium/cilium/pkg/datapath/types"
 	"github.com/cilium/cilium/plugins/cilium-cni/types"
 )
 
@@ -23,13 +22,6 @@ type OnConfigReady interface {
 // endpoint configuration related to IPAM.
 type OnIPAMReady interface {
 	OnIPAMReady(ipam *models.IPAMResponse) error
-}
-
-// OnLinkConfigReady is invoked before the datapath connectors are called to create the pod's
-// network links (i.e. veth or netkit pairs). It may be used to further modify the link
-// configuration.
-type OnLinkConfigReady interface {
-	OnLinkConfigReady(linkConfig *datapath.LinkConfig) error
 }
 
 // OnInterfaceConfigReady is invoked right before the pod's network interface pair is configured and
@@ -51,14 +43,6 @@ func WithOnConfigReady(f OnConfigReady) Option {
 func WithOnIPAMReady(f OnIPAMReady) Option {
 	return func(cmd *Cmd) {
 		cmd.onIPAMReady = append(cmd.onIPAMReady, f)
-	}
-}
-
-// WithOnLinkConfigReady adds a new callback to be invoked before the datapath connectors are called
-// to create the pod's network links.
-func WithOnLinkConfigReady(f OnLinkConfigReady) Option {
-	return func(cmd *Cmd) {
-		cmd.onLinkConfigReady = append(cmd.onLinkConfigReady, f)
 	}
 }
 
